@@ -2,4 +2,4 @@ PRODUCT_MAKEFILES := \
     $(LOCAL_DIR)/twrp_RE6402L1.mk
 
 COMMON_LUNCH_CHOICES := \
-    twrp_RE6402L1-eng
+    twrp_RE6402L1-bp2a-eng

@@ -75,7 +75,7 @@ jobs:
           export ALLOW_MISSING_DEPENDENCIES=true
           export BUILD_BROKEN_SRC_DIR_IS_WRITABLE=true
           source build/envsetup.sh
-          lunch twrp_RE6402L1-eng
+          lunch twrp_RE6402L1-bp2a-eng
           mka recoveryimage 2>&1 | tee "$GITHUB_WORKSPACE/orangefox-16-build.log"
 
       - name: Upload build artifacts

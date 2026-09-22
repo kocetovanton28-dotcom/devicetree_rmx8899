@@ -3,7 +3,7 @@
 This repository is a root-level device tree for the realme Neo8. It can be
 cloned directly into `device/realme/RE6402L1` by the OrangeFox Action Builder.
 The platform is Qualcomm SM8850 (`canoe`), and the lunch target is
-`twrp_RE6402L1-eng`.
+`twrp_RE6402L1-bp2a-eng` для Android 16.
 
 ## 设备专属配置
 
@@ -67,7 +67,7 @@ the Android 16-specific build and vendor configuration.
 
 cd /path/to/twrp-source
 source build/envsetup.sh
-lunch twrp_RE6402L1-eng
+lunch twrp_RE6402L1-bp2a-eng
 m recoveryimage
 ```
 
