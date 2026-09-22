@@ -29,6 +29,17 @@ The platform is Qualcomm SM8850 (`canoe`), and the lunch target is
 
 ## OrangeFox Action Builder
 
+Для запуска собственного R12 builder открой GitHub Actions и выбери workflow
+`Build OrangeFox R12`, затем нажми `Run workflow`. Он использует текущий commit
+репозитория и автоматически размещает дерево в `device/realme/RE6402L1`.
+
+Результат находится в artifact `OrangeFox-R12-RE6402L1`.
+
+Для Android 16 используй workflow `Build OrangeFox 16`. Он синхронизирует
+manifest `OrangeFox16/platform_manifest_twrp_aosp` с веткой `twrp-16` и сохраняет
+результат в artifact `OrangeFox-16-RE6402L1`. В этой сборке `system_dlkm`
+остаётся в конфигурации без R12-совместимого workaround.
+
 Use these workflow inputs in
 [OrangeFox-Action-Builder](https://github.com/carlodandan/OrangeFox-Action-Builder):
 

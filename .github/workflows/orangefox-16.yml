@@ -1,0 +1,91 @@
+name: Build OrangeFox 16
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: OrangeFox 16 / RE6402L1
+    runs-on: ubuntu-22.04
+    timeout-minutes: 345
+
+    steps:
+      - name: Checkout device tree
+        uses: actions/checkout@v4
+        with:
+          path: device_tree
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /usr/local/share/boost /usr/share/swift /opt/hostedtoolcache/CodeQL
+          sudo apt-get clean
+          df -h /
+
+      - name: Create swap
+        run: |
+          sudo swapoff -a || true
+          sudo rm -f /mnt/swapfile
+          sudo fallocate -l 12G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          free -h
+
+      - name: Install build environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc bison build-essential ccache curl flex \
+            g++-multilib gcc-multilib git gnupg gperf imagemagick \
+            lib32ncurses-dev lib32readline-dev lib32z1-dev liblz4-tool \
+            libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils \
+            lzop pngcrush python3 rsync schedtool squashfs-tools xsltproc \
+            zip zlib1g-dev openjdk-17-jdk repo
+
+      - name: Sync OrangeFox 16 source
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/OrangeFox/fox_16"
+          cd "$GITHUB_WORKSPACE/OrangeFox/fox_16"
+          repo init --depth=1 \
+            -u https://github.com/OrangeFox16/platform_manifest_twrp_aosp.git \
+            -b twrp-16
+          repo sync -c -j8 --no-tags --optimized-fetch --force-sync
+
+      - name: Install device tree
+        run: |
+          cd "$GITHUB_WORKSPACE/OrangeFox/fox_16"
+          mkdir -p device/realme/RE6402L1
+          rsync -a --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            "$GITHUB_WORKSPACE/device_tree/" \
+            device/realme/RE6402L1/
+          test -s device/realme/RE6402L1/prebuilt/kernel
+          test -f device/realme/RE6402L1/AndroidProducts.mk
+          test -f device/realme/RE6402L1/BoardConfig.mk
+          grep -q '^    system_dlkm \\$' device/realme/RE6402L1/BoardConfig.mk
+          echo "DEVICE_TREE_COMMIT=$(git -C "$GITHUB_WORKSPACE/device_tree" rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Build recovery
+        run: |
+          cd "$GITHUB_WORKSPACE/OrangeFox/fox_16"
+          export ALLOW_MISSING_DEPENDENCIES=true
+          export BUILD_BROKEN_SRC_DIR_IS_WRITABLE=true
+          source build/envsetup.sh
+          lunch twrp_RE6402L1-eng
+          mka recoveryimage 2>&1 | tee "$GITHUB_WORKSPACE/orangefox-16-build.log"
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrangeFox-16-RE6402L1
+          if-no-files-found: warn
+          path: |
+            OrangeFox/fox_16/out/target/product/RE6402L1/recovery.img
+            OrangeFox/fox_16/out/target/product/RE6402L1/OrangeFox*.img
+            OrangeFox/fox_16/out/target/product/RE6402L1/OrangeFox*.zip
+            orangefox-16-build.log
