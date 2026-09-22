@@ -1,0 +1,2 @@
+export FOX_AB_DEVICE=1
+add_lunch_combo twrp_RE6402L1-eng
